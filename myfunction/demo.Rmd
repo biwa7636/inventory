@@ -1,0 +1,34 @@
+OUTLIERS(AO, IO, TS, LS) DEMO
+========================================================
+
+
+$$
+\begin{align}
+\ AR(p): Y_i = c + \epsilon_i + \phi_1 Y_{i-1} + \phi_2 Y_{i-2} + \dots + \phi_p Y_{i-p} 
+\newline
+\ AR(p): Y_i = c + \epsilon_i + \phi_1 B Y_i + \phi_2 B^2 Y_i + \dots + \phi_p B^p Y_i
+\newline
+\ AR(p): Y_i = c + \epsilon_i + Y_i(\phi_1 B  + \phi_2 B^2 + \dots + \phi_p B^p) = c + \epsilon_i + Y_i \Phi(B)
+
+
+\newline
+\ MA(q): Y_{i} = \mu + \theta_1 \epsilon_{i-1} + \theta_2 \epsilon_{i-2} + \dots + \theta_q \epsilon_{i-q} 
+\newline
+\ MA(q): Y_{i} = \mu + \theta_1 B \epsilon_{i} + \theta_2 B^2 \epsilon_i + \dots + \theta_q B^q \epsilon_{i} 
+\newline
+\ MA(q): Y_{i} = \mu + \epsilon_i (\theta_1 B + \theta_2 B^2 + \dots + \theta_q B^q) = \mu + \epsilon_i \Theta(B)
+
+\newline
+\ I(1): Y_{i} - Y_{i-1} = a
+\newline
+\ I(1): Y_i (1-B) = a
+\newline
+\ I(2): (Y_{i} - Y_{i-1}) - (Y_{i-1} - Y_{i-2}) = a
+\newline
+\ I(2): (1 - B) Y_i - (B - B^2) Y_i = (1-B)^2 Y_i = a 
+\newline
+\ I(d): (1-B)^d Y_i = a
+\newline
+
+\end{align}
+$$
