@@ -2,15 +2,14 @@
 library(dplyr)
 library(outliers)
 library(zoo)
-library(forecast)
-library(tsoutliers)
-
+#library(forecast)
+#library(tsoutliers)
 f <- file("stdin")
 open(f, open="r")
-
-mydelimiter_a <- rawToChar(as.raw(1))
-mydelimiter <- '\t'
-
+mydelimiter_a <<- rawToChar(as.raw(1))
+mydelimiter <<- '\t'
+myrecords_limit <<- 30
+ 
 myfunction <- function(inputarray){
  tryCatch(
     {
@@ -21,10 +20,12 @@ myfunction <- function(inputarray){
         data$date <- as.Date(as.character(data$date), "%Y%m%d")
         data$qtyavail <- as.numeric(as.character(data$qtyavail))
         data$price <- as.numeric(as.character(data$price))
-        data.backup <- data %>% group_by(date) %>% summarise(qtyavail_max = max(qtyavail)) %>% arrange(date)
-        
+        data.raw <- data
+        data.backup <- data %>% group_by(date) %>% summarise(qtyavail_max = max(qtyavail, na.rm=TRUE)) %>% arrange(date)
+        if(nrow(data.backup) < 30){return("ERROR_NOT_ENOUGH_RECORDS")}
+        #counts <- table(data$price)
+        #price <- cat(paste(counts, names(counts), sep="|"), sep=',')
         if(nrow(data.backup)==0){return("ERROR")}
-   
         ###########################
         # REMOVE OUTLIERS         #
         ###########################
@@ -33,111 +34,93 @@ myfunction <- function(inputarray){
         deltas <- -diff(data$qtyavail_max)
         sell.raw <- sum(pmax(0, deltas), na.rm=TRUE)
         buy.raw <- sum(pmin(0, deltas), na.rm=TRUE)
-
         # (2) MEDIAN
         data <- data.backup
         qtyavail_threshold <- 1000 + 10 * mean(data$qtyavail_max)
-        data <- data %>% filter(qtyavail_max < qtyavail_threshold) 
+        data <- data %>% filter(qtyavail_max < qtyavail_threshold)
         deltas <- -diff(data$qtyavail_max)
         sell.median <- sum(pmax(0, deltas), na.rm=TRUE)
         buy.median <- sum(pmin(0, deltas), na.rm=TRUE)
-        
         # (3) OUTLIERS
         data <- data.backup
         data$qtyavail_max <- rm.outlier(data$qtyavail_max, fill=TRUE, median=TRUE)
         deltas <- -diff(data$qtyavail_max)
         sell.outlier <- sum(pmax(0, deltas), na.rm=TRUE)
         buy.outlier <- sum(pmin(0, deltas), na.rm=TRUE)
-
-        # (4) TSOUTLIERS
-        # Not Working Yet
-        tryCatch(
-            {
-                data <- data.backup
-                data.ts <- zoo(data$qtyavail_max)
-                data.ts.model <- auto.arima(data.ts)
-                pars <- coefs2poly(data.ts.model)
-                #outliers <- locate.outliers(data.ts.model$residuals, pars)
-                resid <- residuals(data.ts.model)
-                pars <- coefs2poly(data.ts.model)
-                print("residuals")
-                print(as.character(resid))
-                print("pars")
-                print(as.character(pars))
-                outliers <- locate.outliers(resid, pars)
-                print(as.character(outliers))
-                data <- data[-c(subset(outliers, type == 'AO')$ind), ]
-                deltas <- -diff(data$qtyavail_max)
-                sell.tsoutlier <- sum(pmax(0, deltas), na.rm=TRUE)
-                buy.tsoutlier <- sum(pmin(0, deltas), na.rm=TRUE)
-                output <- gsub('NA', '-1', output)
-            },
-            error=function(e){
-                print(head(data))
-                print(as.character(e))
-            }
-        )
-        
-        ############################
-        # GOALS FOR EACH PRODUCT   #
-        ############################
-        #goal_price_min <- min(data$price[data$price>0], na.rm=TRUE)
-        #goal_avgqty <- mean(result$qtyavail_max)
-        #goal_sell <- sum(pmax(0, deltas))
-        #goal_buy <- abs(sum(pmin(0, deltas)))
-        #goal_days_sell <- max(mysummary["1"], 0)
-        #goal_days_buy <- max(mysummary["-1"], 0)
-        #goal_days_static <- max(mysummary["0"], 0)  
-        #output<-paste(goal_price_min, goal_avgqty, goal_sell, goal_buy, goal_days_sell, goal_days_buy, goal_days_static, sep=mydelimiter_a)
-        #output<-gsub('NA', '-1', output)
-        output <- paste(sell.raw, sell.median, sell.outlier, sell.tsoutlier, buy.raw, buy.median, buy.outlier, buy.tsoutlier, sep=mydelimiter_a)
+        # (4) STANDARD DEVIATION
+        #transactions <- deltas[deltas > 0]
+        #mysd <- sd(transactions)
+        #mymean <- mean(transactions)
+        goal_raw_records <- nrow(data)
+        goal_aggr_records <- nrow(data.backup)
+        goal_qty_unique <- length(unique(data.backup$qtyavail_max))
+        goal_qty_mean <- mean(data.backup$qtyavail_max)
+        goal_qty_sd <- sd(data.backup$qtyavail_max)
+        deltas <- -diff(data.backup$qtyavail_max)
+        deltas <- deltas[deltas >= 0]
+        goal_dif_unique <- length(unique(deltas))
+        goal_dif_mean <- mean(deltas, na.rm=TRUE)
+        goal_dif_sd <- sd(deltas, na.rm=TRUE)
+        # price might be -1 all the time
+        goal_price_min <- min(data.raw$price[data.raw$price > 0], na.rm=TRUE)
+        goal_price_min <- min(-1, goal_price_min)
+        output <- paste(
+            goal_raw_records,
+            goal_aggr_records,
+            goal_qty_unique,
+            goal_qty_mean,
+            goal_qty_sd,
+            goal_dif_unique,
+            goal_dif_mean,
+            goal_dif_sd,
+            goal_price_min,
+            sell.raw, buy.raw,
+            sell.median, buy.median,
+            sell.outlier, buy.outlier,
+            sep=mydelimiter_a
+            )
         return(output)
     },
-
     error=function(e){
       msg <- as.character(e)
       msg <- gsub('\n', '', msg)
+      msg <- paste0('FUNCTION_ERROR', msg)
       return(msg)
     }
   )
 }
-
+##################################################################
+# This is the overhead part of hadoop streaming
+# sorted output from the mappers will be read from stdin by reducer
+##################################################################
 # FIRST LINE
+sink('/dev/null')
 firstline <- readLines(f, n=1)
 fields <- unlist(strsplit(firstline, split=mydelimiter))
 mykey_current <- fields[1]
 myvalue_array <- array(fields[2])
-
 while(length(line<-readLines(f, n=1)) > 0){
-    tryCatch( 
+    tryCatch(
         {
             fields <- unlist(strsplit(line, split=mydelimiter))
             mykey_new <- fields[1]
             myvalue_new <- fields[2]
-        
             if ( mykey_new == mykey_current) {
                 # Same Key: append new value to existing value array
                 myvalue_array <- c(myvalue_array, myvalue_new)
             } else {
                 # Different Key
                 # (1): process existing values
-                result <- myfunction(myvalue_array)        
-                cat(mykey_current);cat(mydelimiter_a);cat(result);cat('\n')
+                result <- myfunction(myvalue_array)
+                sink();cat(mykey_current);cat(mydelimiter_a);cat(result);cat('\n');sink('/dev/null');
                 # (2): reset key, value
                 mykey_current <- mykey_new
                 myvalue_array <- array(myvalue_new)
             }
         },
-        error=function(e){
-            msg <- as.character(e)
-            msg <- gsub('\n', '', msg)
-            cat(msg);cat('\n')
-        }
+        error=function(e){}
     )
 }
-
 # LAST LINE
 result <- myfunction(myvalue_array)
-cat(mykey_current);cat(mydelimiter_a);cat(result);cat('\n')
-
-
+sink();cat(mykey_current);cat(mydelimiter_a);cat(result);cat('\n');sink('/dev/null');
