@@ -23,11 +23,11 @@ All functions need to:
 """
 
 
-def testMax(l=[1,2,3]):
-    return max(l)
+def testMax(df):
+    return max(df.iloc[:,0])
 
-def testMin(l=[1,2,3]):
-    return min(l)
+def testMin(df):
+    return min(df.iloc[:,0])
 
 
 def myFunctionTemplate(tsData):
