@@ -9,3 +9,5 @@ This is a repository of some code that analyze inventory performance at large sc
 4. funapi is the django API
 
 5. myflask is the flask API that read functions dynamically 
+
+6. poolOfFunctios: a pool of business analytic functions with unit test
