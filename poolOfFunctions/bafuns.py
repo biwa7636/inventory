@@ -22,6 +22,14 @@ All functions need to:
 
 """
 
+
+def testMax(l=[1,2,3]):
+    return max(l)
+
+def testMin(l=[1,2,3]):
+    return min(l)
+
+
 def myFunctionTemplate(tsData):
     #tsData has to be:
     #1. a panda DataFrame:
