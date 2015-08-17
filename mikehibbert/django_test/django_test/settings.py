@@ -101,9 +101,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
-STATIC_ROOT = '/home/datafireball/Desktop/inventory/mikehibbert/django_test'
+MEDIA_ROOT = '/Users/a59347/Desktop/inventory/mikehibbert/django_test/static'
+
+STATIC_ROOT = '/Users/a59347/Desktop/inventory/mikehibbert/django_test/'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    ("assets", "/home/datafireball/Desktop/inventory/mikehibbert/django_test/static"),
+    ("assets", "/Users/a59347/Desktop/inventory/mikehibbert/django_test/static"),
 )

@@ -5,7 +5,9 @@ from django.template import Context
 from django.views.generic.base import TemplateView
 from django.shortcuts import render_to_response
 from article.models import Article
-
+from forms import ArticleForm
+from django.http import HttpResponseRedirect
+from django.core.context_processors import csrf
 
 def hello(request):
     name = "Bin"
@@ -59,3 +61,24 @@ def articles(request):
 def article(request, article_id=1):
     return render_to_response('article.html',  {'article':  Article.objects.get(id=article_id)})
 
+def create(request):
+    if request.POST:
+        form = ArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/articles/all')
+    else: 
+        form = ArticleForm()
+
+    args = {}
+    args.update(csrf(request))
+    args['form'] = form
+    return render_to_response('create_article.html', args)
+
+def like_article(request, article_id):
+    if article_id:
+        a = Article.objects.get(id=article_id)
+        count = a.likes + 1
+        a.likes = count
+        a.save()
+        return HttpResponseRedirect('/articles/get/{}'.format(article_id))

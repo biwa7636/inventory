@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 
+{% block sidebar %}
+<ul>
+	<li><a href="/articles/all">Articles</a></li>
+	<li><a href="/articles/create">Create Article</a></li>
+</ul>
+{% endblock %}
+
+
+
 {% block content %}
 <h2>language is: {{language}}</h2>
 <h2>Session Language is: {{session_language}}</h2>
-
 {% if articles.count > 0 %}
 {% for article in articles %}
 <div>
@@ -14,5 +22,4 @@
 {% else %}
 <p>None to show</p>
 {% endif %}
-
 {% endblock %}
