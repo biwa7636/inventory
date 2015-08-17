@@ -56,7 +56,8 @@ ROOT_URLCONF = 'django_test.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates/',],
+        'DIRS': ['templates/', 
+      		'articles/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -100,4 +101,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+STATIC_ROOT = '/home/datafireball/Desktop/inventory/mikehibbert/django_test'
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    ("assets", "/home/datafireball/Desktop/inventory/mikehibbert/django_test/static"),
+)

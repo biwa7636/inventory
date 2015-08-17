@@ -1,0 +1,3 @@
+{{object.my_zip}}
+{{object.my_state}}
+{{object.my_county}}

@@ -1,0 +1,8 @@
+{% if myzipcodes.count > 0  %}
+
+{% for myzipcode in myzipcodes %}
+    <li><a href="/myzipcodes/get/"></a></li>
+{% endfor %}
+{% else %}
+<li>None to show!</li>
+{% endif %}
