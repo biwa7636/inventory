@@ -5,12 +5,10 @@ from django.core.context_processors import csrf
 from django.contrib.auth.forms import UserCreationForm
 from forms import MyRegistrationForm
 
-
 def login(request):
 	c = {}
 	c.update(csrf(request))
 	return render_to_response('login.html', c)
-
 
 def auth_view(request):
 	username = request.POST.get('username', '')
@@ -33,7 +31,6 @@ def invalid_login(request):
 def logout(request):
 	auth.logout(request)
 	return render_to_response('logout.html')
-
 
 def register_user(request):
 	if request.method == "POST":

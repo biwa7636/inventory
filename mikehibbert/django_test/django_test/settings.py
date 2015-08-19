@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = (
@@ -101,11 +100,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
-MEDIA_ROOT = '/Users/a59347/Desktop/inventory/mikehibbert/django_test/static'
-
+MEDIA_ROOT  = '/Users/a59347/Desktop/inventory/mikehibbert/django_test/static'
 STATIC_ROOT = '/Users/a59347/Desktop/inventory/mikehibbert/django_test/'
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = (
     ("assets", "/Users/a59347/Desktop/inventory/mikehibbert/django_test/static"),
 )
